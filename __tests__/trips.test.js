@@ -65,33 +65,50 @@ describe('POST /bookings', () => {
     expect(res.body.result).toBe(false);
   });
 
-  it('should create booking and return token', async () => {
+  it('should create booking and return booking object', async () => {
     const trip = await Trip.findOne({ departure: 'Paris', arrival: 'Lyon' });
     const res = await request(app).post('/bookings').send({ tripId: trip._id });
     expect(res.status).toBe(201);
     expect(res.body.result).toBe(true);
-    expect(res.body.token).toBeDefined();
+    expect(res.body.booking).toBeDefined();
+    expect(res.body.booking.totalPrice).toBe(100);
   });
 });
 
-describe('GET /bookings/:token', () => {
-  it('should return empty array for unknown token', async () => {
-    const res = await request(app).get('/bookings/unknown-token');
+describe('GET /bookings', () => {
+  it('should return all bookings', async () => {
+    const res = await request(app).get('/bookings');
     expect(res.status).toBe(200);
     expect(res.body.result).toBe(true);
-    expect(res.body.bookings).toHaveLength(0);
+    expect(Array.isArray(res.body.bookings)).toBe(true);
   });
 
-  it('should return booking for valid token', async () => {
+  it('should return bookings with trip populated', async () => {
+    const res = await request(app).get('/bookings');
+    expect(res.status).toBe(200);
+    res.body.bookings.forEach(booking => {
+      expect(booking.trip).toHaveProperty('departure');
+      expect(booking.trip).toHaveProperty('arrival');
+      expect(booking.trip).toHaveProperty('price');
+    });
+  });
+});
+
+describe('DELETE /bookings/:id', () => {
+  it('should delete a booking and return result true', async () => {
     const trip = await Trip.findOne({ departure: 'Lyon' });
     const postRes = await request(app).post('/bookings').send({ tripId: trip._id });
-    const token = postRes.body.token;
+    const bookingId = postRes.body.booking._id;
 
-    const res = await request(app).get(`/bookings/${token}`);
+    const res = await request(app).delete(`/bookings/${bookingId}`);
     expect(res.status).toBe(200);
     expect(res.body.result).toBe(true);
-    expect(res.body.bookings.length).toBe(1);
-    expect(res.body.bookings[0].trip.departure).toBe('Lyon');
+  });
+
+  it('should return 404 for unknown booking id', async () => {
+    const res = await request(app).delete('/bookings/000000000000000000000000');
+    expect(res.status).toBe(404);
+    expect(res.body.result).toBe(false);
   });
 });
 

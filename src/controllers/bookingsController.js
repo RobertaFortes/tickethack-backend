@@ -18,16 +18,28 @@ exports.createBooking = async (req, res) => {
       totalPrice: trip.price,
     });
 
-    res.status(201).json({ result: true, token: booking.token, booking });
+    res.status(201).json({ result: true, booking });
   } catch (error) {
     res.status(500).json({ result: false, error: 'Internal server error' });
   }
 };
 
-exports.getBookingsByToken = async (req, res) => {
+exports.getBookings = async (req, res) => {
   try {
-    const bookings = await Booking.find({ token: req.params.token }).populate('trip');
+    const bookings = await Booking.find().populate('trip');
     res.json({ result: true, bookings });
+  } catch (error) {
+    res.status(500).json({ result: false, error: 'Internal server error' });
+  }
+};
+
+exports.deleteBooking = async (req, res) => {
+  try {
+    const deleted = await Booking.findByIdAndDelete(req.params.id);
+    if (!deleted) {
+      return res.status(404).json({ result: false, error: 'Booking not found' });
+    }
+    res.json({ result: true });
   } catch (error) {
     res.status(500).json({ result: false, error: 'Internal server error' });
   }
