@@ -15,14 +15,10 @@ REST API for the Tickethack application, built with Node.js, Express, and MongoD
 
 ```
 tickethack-backend/
-├── src/
-│   ├── config/
-│   │   └── db.js           # MongoDB connection
-│   ├── controllers/        # Route handlers
-│   ├── models/             # Mongoose schemas
-│   ├── routes/             # Express routers
-│   └── middlewares/        # Custom middlewares
-├── server.js               # App entry point
+├── models/                 # Mongoose schemas + MongoDB connection
+├── routes/                 # Express routers
+├── app.js                  # Express app configuration
+├── server.js               # App startup
 ├── .env                    # Environment variables (not committed)
 └── package.json
 ```

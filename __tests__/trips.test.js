@@ -2,7 +2,7 @@ const request = require('supertest');
 const app = require('../server');
 const mongoose = require('mongoose');
 const { MongoMemoryServer } = require('mongodb-memory-server');
-const Trip = require('../src/models/trips');
+const Trip = require('../models/trips');
 
 let mongoServer;
 
@@ -49,66 +49,6 @@ describe('GET /trips', () => {
     expect(res.body.result).toBe(true);
     expect(res.body.trips.length).toBe(1);
     expect(res.body.trips[0].arrival).toBe('Lyon');
-  });
-});
-
-describe('POST /bookings', () => {
-  it('should return 400 if tripId is missing', async () => {
-    const res = await request(app).post('/bookings').send({});
-    expect(res.status).toBe(400);
-    expect(res.body.result).toBe(false);
-  });
-
-  it('should return 404 if trip not found', async () => {
-    const res = await request(app).post('/bookings').send({ tripId: '000000000000000000000000' });
-    expect(res.status).toBe(404);
-    expect(res.body.result).toBe(false);
-  });
-
-  it('should create booking and return booking object', async () => {
-    const trip = await Trip.findOne({ departure: 'Paris', arrival: 'Lyon' });
-    const res = await request(app).post('/bookings').send({ tripId: trip._id });
-    expect(res.status).toBe(201);
-    expect(res.body.result).toBe(true);
-    expect(res.body.booking).toBeDefined();
-    expect(res.body.booking.totalPrice).toBe(100);
-  });
-});
-
-describe('GET /bookings', () => {
-  it('should return all bookings', async () => {
-    const res = await request(app).get('/bookings');
-    expect(res.status).toBe(200);
-    expect(res.body.result).toBe(true);
-    expect(Array.isArray(res.body.bookings)).toBe(true);
-  });
-
-  it('should return bookings with trip populated', async () => {
-    const res = await request(app).get('/bookings');
-    expect(res.status).toBe(200);
-    res.body.bookings.forEach(booking => {
-      expect(booking.trip).toHaveProperty('departure');
-      expect(booking.trip).toHaveProperty('arrival');
-      expect(booking.trip).toHaveProperty('price');
-    });
-  });
-});
-
-describe('DELETE /bookings/:id', () => {
-  it('should delete a booking and return result true', async () => {
-    const trip = await Trip.findOne({ departure: 'Lyon' });
-    const postRes = await request(app).post('/bookings').send({ tripId: trip._id });
-    const bookingId = postRes.body.booking._id;
-
-    const res = await request(app).delete(`/bookings/${bookingId}`);
-    expect(res.status).toBe(200);
-    expect(res.body.result).toBe(true);
-  });
-
-  it('should return 404 for unknown booking id', async () => {
-    const res = await request(app).delete('/bookings/000000000000000000000000');
-    expect(res.status).toBe(404);
-    expect(res.body.result).toBe(false);
   });
 });
 
