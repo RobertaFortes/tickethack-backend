@@ -1,5 +1,6 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
+require('node:dns/promises').setServers(['1.1.1.1', '8.8.8.8']);
 
 const connectDB = async () => {
   if (mongoose.connection.readyState !== 0) return;
