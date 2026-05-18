@@ -21,6 +21,7 @@ router.get('/', async (req, res) => {
 		const trips = await Trip.find(filter);
 		res.json({ result: true, trips });
 	} catch (error) {
+		console.error('GET /trips error:', error);
 		res.status(500).json({ result: false, error: 'Internal server error' });
 	}
 });
